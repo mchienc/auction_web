@@ -14,9 +14,13 @@ return new class extends Migration
     public function up()
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+    $table->id();
+    $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Khóa ngoại tới bảng users
+    $table->string('name');
+    $table->text('description');
+    $table->string('image')->nullable(); // Đường dẫn tới ảnh
+    $table->timestamps();
+});
     }
 
     /**
@@ -29,11 +33,3 @@ return new class extends Migration
         Schema::dropIfExists('products');
     }
 };
-Schema::create('products', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Khóa ngoại tới bảng users
-    $table->string('name');
-    $table->text('description');
-    $table->string('image')->nullable(); // Đường dẫn tới ảnh
-    $table->timestamps();
-});
