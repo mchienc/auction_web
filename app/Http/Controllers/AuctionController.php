@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewBidPlaced;
 use App\Models\Auction;
 use Illuminate\Http\Request;
 
