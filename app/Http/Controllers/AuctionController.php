@@ -1,70 +1,34 @@
 <?php
 
-namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\AuctionController;
+use App\Http\Controllers\ProfileController; // Đảm bảo dòng này đúng
 
-use App\Events\NewBidPlaced;
-use App\Models\Auction;
-use Illuminate\Http\Request;
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
 
-class AuctionController extends Controller
-{
-    /**
-     * Hiển thị danh sách các phiên đấu giá.
-     */
-    public function index()
-    {
-        // Lấy tất cả các phiên đấu giá đang chạy, sắp xếp theo thời gian tạo mới nhất
-        $auctions = Auction::with('product') // Tải kèm thông tin sản phẩm để tránh N+1 query
-            ->where('status', 'running')
-            ->orderBy('created_at', 'desc')
-            ->get();
+Route::get('/', [AuctionController::class, 'index'])->name('home');
 
-        // Trả về view 'home' và truyền dữ liệu auctions vào
-        return view('home', compact('auctions'));
-    }
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-    /**
-     * Hiển thị chi tiết một phiên đấu giá.
-     */
-    public function show(Auction $auction)
-{
-    // Tải các thông tin liên quan để tối ưu query và hiển thị
-    $auction->load('product.user', 'bids.user');
+Route::middleware('auth')->group(function () {
+    // Routes cho Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    return view('auctions.show', compact('auction'));
-}
+    // Routes cho Product
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+});
 
-    /**
-     * Xử lý việc đặt giá.
-     */
-    public function placeBid(Request $request, Auction $auction)
-{
-    // 1. Validate dữ liệu
-    $request->validate([
-        'amount' => 'required|numeric|min:' . ($auction->current_price + 1),
-    ]);
+Route::get('/auctions/{auction}', [AuctionController::class, 'show'])->name('auctions.show');
+Route::post('/auctions/{auction}/bids', [AuctionController::class, 'placeBid'])->name('auctions.bids.store')->middleware('auth');
 
-    // 2. Kiểm tra xem phiên đấu giá còn hoạt động không
-    if ($auction->end_time < now() || $auction->status !== 'running') {
-        return back()->with('error', 'Phiên đấu giá đã kết thúc.');
-    }
-
-    // 3. Không cho phép người đăng sản phẩm tự trả giá
-    if ($auction->product->user_id == auth()->id()) {
-        return back()->with('error', 'Bạn không thể tự trả giá cho sản phẩm của mình.');
-    }
-
-    // 4. Tạo một lượt đặt giá mới
-    $bid = new \App\Models\Bid();
-    $bid->user_id = auth()->id();
-    $bid->auction_id = $auction->id;
-    $bid->amount = $request->amount;
-    $bid->save();
-
-    // 5. Cập nhật lại giá hiện tại của phiên đấu giá
-    $auction->current_price = $request->amount;
-    $auction->save();
-
-    return back()->with('success', 'Đặt giá thành công!');
-}
-}
+require __DIR__.'/auth.php';

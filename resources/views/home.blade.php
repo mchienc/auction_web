@@ -12,6 +12,28 @@
                     {{ session('success') }}
                 </div>
             @endif
+            @if($auction->status == 'finished')
+    <span class="mt-2 inline-block bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded">Đã kết thúc</span>
+            @endif
+            @if($auction->status == 'running')
+    @auth
+        <form action="{{ route('auctions.bids.store', $auction) }}" method="POST" class="mt-4">
+            {{-- ... nội dung form ... --}}
+        </form>
+    @else
+        <p class="mt-4 text-red-500">Bạn cần <a href="{{ route('login') }}" class="underline">đăng nhập</a> để đặt giá.</p>
+    @endauth
+@else
+    {{-- Hiển thị khi phiên đấu giá đã kết thúc --}}
+    <div class="mt-6 p-4 bg-gray-100 rounded-lg">
+        <p class="font-semibold text-lg text-center">Phiên đấu giá đã kết thúc!</p>
+        @if($auction->winner)
+            <p class="text-center mt-2">Người chiến thắng: <span class="font-bold">{{ $auction->winner->name }}</span> với giá <span class="font-bold text-red-600">{{ number_format($auction->current_price) }} VND</span></p>
+        @else
+            <p class="text-center mt-2">Phiên đấu giá kết thúc mà không có người trả giá.</p>
+        @endif
+    </div>
+@endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($auctions as $auction)
@@ -34,6 +56,9 @@
                     <p class="col-span-3 text-center text-gray-500">Chưa có phiên đấu giá nào.</p>
                 @endforelse
             </div>
+            <div class="mt-8">
+    {{ $auctions->links() }}
+    </div>
         </div>
     </div>
 </x-app-layout>

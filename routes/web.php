@@ -30,5 +30,6 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/auctions/{auction}', [AuctionController::class, 'show'])->name('auctions.show');
 Route::post('/auctions/{auction}/bids', [AuctionController::class, 'placeBid'])->name('auctions.bids.store')->middleware('auth');
-
+Route::get('/my-auctions', [AuctionController::class, 'myAuctions'])->name('auctions.mine');
+Route::get('/won-auctions', [AuctionController::class, 'wonAuctions'])->name('auctions.won');
 require __DIR__.'/auth.php';
