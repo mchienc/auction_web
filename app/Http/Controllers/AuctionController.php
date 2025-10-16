@@ -6,6 +6,7 @@ use App\Models\Auction;
 use App\Models\Bid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\NewBidPlaced;
 
 class AuctionController extends Controller
 {
@@ -77,7 +78,7 @@ class AuctionController extends Controller
         $auction->save();
         
         // (Tùy chọn) Bạn có thể thêm sự kiện (event) ở đây để thông báo real-time
-        // event(new NewBidPlaced($bid));
+        event(new NewBidPlaced($bid));
 
         return redirect()->back()->with('success', 'Bạn đã trả giá thành công.');
     }

@@ -4,10 +4,12 @@ namespace App\Events;
 
 use App\Models\Bid;
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\InteractsWithSockets;
 
 class NewBidPlaced implements ShouldBroadcast
 {
@@ -17,25 +19,13 @@ class NewBidPlaced implements ShouldBroadcast
 
     public function __construct(Bid $bid)
     {
-        $this->bid = $bid;
+        // Tải thông tin người dùng kèm theo lượt trả giá
+        $this->bid = $bid->load('user');
     }
 
     public function broadcastOn()
     {
+        // Phát sự kiện trên kênh của phiên đấu giá cụ thể
         return new Channel('auction.' . $this->bid->auction_id);
-    }
-
-    public function broadcastWith()
-    {
-        // Tải thông tin user để gửi đi
-        $this->bid->load('user');
-
-        return [
-            'bid' => [
-                'amount' => $this->bid->amount,
-                'user_name' => $this->bid->user->name,
-                'created_at' => $this->bid->created_at->format('H:i:s'),
-            ],
-        ];
     }
 }
