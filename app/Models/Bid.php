@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Bid extends Model
-{ // <-- Thêm dấu {
-    use HasFactory; // <-- Thêm dòng này
+{ 
+    use HasFactory; 
 
     public function auction() {
         return $this->belongsTo(Auction::class);

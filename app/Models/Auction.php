@@ -8,7 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Auction extends Model
 {
     use HasFactory;
-       public function product() {
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+    ];
+
+    public function product() {
         return $this->belongsTo(Product::class);
     }
 
